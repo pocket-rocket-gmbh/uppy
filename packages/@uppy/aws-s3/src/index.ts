@@ -165,6 +165,13 @@ type AWSS3WithoutCompanion = {
     onComplete: any
     signal?: AbortSignal
   }) => Promise<UploadPartBytesResult>
+  preprocessChunk?: (
+    file: UppyFile<any, any>,
+    chunk: Blob,
+    chunkIndex: number,
+    isLastChunk: boolean,
+  ) => Promise<Blob>
+  sequentialProcessing?: boolean
 }
 
 type AWSS3NonMultipartWithCompanionMandatory = {
@@ -333,6 +340,7 @@ export default class AwsS3Multipart<
       completeMultipartUpload: null as any,
       signPart: null as any,
       getUploadParameters: null as any,
+      preprocessChunk: null as any,
       ...opts,
     })
     // We need the `as any` here because of the dynamic default options.
@@ -864,6 +872,10 @@ export default class AwsS3Multipart<
           this.opts.getChunkSize ?
             this.opts.getChunkSize.bind(this)
           : undefined,
+        preprocessChunk:
+          (this.opts as any).preprocessChunk ?
+            (this.opts as any).preprocessChunk.bind(this)
+          : undefined,
 
         onProgress,
         onError,
@@ -880,6 +892,7 @@ export default class AwsS3Multipart<
         shouldUseMultipart: this.opts.shouldUseMultipart,
 
         ...(file as MultipartFile<M, B>).s3Multipart,
+        sequentialProcessing: (this.opts as any).sequentialProcessing,
       })
 
       this.uploaders[file.id] = upload

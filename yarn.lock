@@ -7489,8 +7489,8 @@ __metadata:
 
 "@types/jasmine@file:./private/@types/jasmine::locator=%40uppy-dev%2Fbuild%40workspace%3A.":
   version: 0.0.0
-  resolution: "@types/jasmine@file:./private/@types/jasmine#./private/@types/jasmine::hash=917119&locator=%40uppy-dev%2Fbuild%40workspace%3A."
-  checksum: 10/cc86c9a338a6943da64fb636e13bdc8f2e41922ae62c3cfd95525b0a0965a28ecd7545173773f2b61a3c30ae70c8eeb9a725eb71fd9006a07a8733ecbac849b9
+  resolution: "@types/jasmine@file:./private/@types/jasmine#./private/@types/jasmine::hash=cf2699&locator=%40uppy-dev%2Fbuild%40workspace%3A."
+  checksum: 10/f8900f2d42d5c061a69cebc73bc83950095b354964834ab459dbd144a006f4afa0ffc436cfd5c0e74522f5752a7e30d60e1c6c2f69a184f59a749df405a54cdc
   languageName: node
   linkType: hard
 
@@ -7503,8 +7503,8 @@ __metadata:
 
 "@types/jasminewd2@file:./private/@types/jasmine::locator=%40uppy-dev%2Fbuild%40workspace%3A.":
   version: 0.0.0
-  resolution: "@types/jasminewd2@file:./private/@types/jasmine#./private/@types/jasmine::hash=fe65e0&locator=%40uppy-dev%2Fbuild%40workspace%3A."
-  checksum: 10/028a3a54e144661b64d14b439c585db2ade1a22ba4b21de85cb469afd2f1bf5e78079ab3f3e5c058ed4146e7cef5300e27c8d176d9f168222d88576671608135
+  resolution: "@types/jasminewd2@file:./private/@types/jasmine#./private/@types/jasmine::hash=17481a&locator=%40uppy-dev%2Fbuild%40workspace%3A."
+  checksum: 10/ccc420c3ba7580cc562cb093705871265a961bce06bc366365fb32f9f73b276900d07ceb08591e4974bd40f766acc442145e78a70a0cf41a6dc1621999965073
   languageName: node
   linkType: hard
 
@@ -8064,6 +8064,7 @@ __metadata:
     prettier: "npm:^3.0.3"
     remark-cli: "npm:^12.0.0"
     resolve: "npm:^1.17.0"
+    run-in-sequence: "npm:^1.0.5"
     sass: "npm:^1.29.0"
     start-server-and-test: "npm:^1.14.0"
     stylelint: "npm:^15.0.0"
@@ -26226,6 +26227,13 @@ __metadata:
   version: 3.0.0
   resolution: "run-async@npm:3.0.0"
   checksum: 10/97fb8747f7765b77ebcd311d3a33548099336f04c6434e0763039b98c1de0f1b4421000695aff8751f309c0b995d8dfd620c1f1e4c35572da38c101488165305
+  languageName: node
+  linkType: hard
+
+"run-in-sequence@npm:^1.0.5":
+  version: 1.0.5
+  resolution: "run-in-sequence@npm:1.0.5"
+  checksum: 10/e4ef51651ffcaecaca3d0d8c15b6facf26878c84d376d99109bdccf8d26b82b0b920d249d20f09e86b5d2b2d825d2d9ee73ed2e24c1e404f0d14229bf2585139
   languageName: node
   linkType: hard
 

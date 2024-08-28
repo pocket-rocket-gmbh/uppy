@@ -15,6 +15,13 @@ interface MultipartUploaderOptions<M extends Meta, B extends Body> {
   companionComm: HTTPCommunicationQueue<M, B>
   file: UppyFile<M, B>
   log: Uppy<M, B>['log']
+  preprocessChunk?: (
+    file: UppyFile<M, B>,
+    chunk: Blob,
+    chunkNumber: number,
+    isLastChunk: boolean,
+  ) => Blob
+  sequentialProcessing?: boolean
 
   uploadId: string
   key: string
@@ -33,7 +40,7 @@ const defaultOptions = {
 } satisfies Partial<MultipartUploaderOptions<any, any>>
 
 export interface Chunk {
-  getData: () => Blob
+  getData: () => Promise<Blob>
   onProgress: (ev: ProgressEvent) => void
   onComplete: (etag: string) => void
   shouldUseMultipart: boolean
@@ -145,14 +152,17 @@ class MultipartUploader<M extends Meta, B extends Body> {
       for (let offset = 0, j = 0; offset < fileSize; offset += chunkSize, j++) {
         const end = Math.min(fileSize, offset + chunkSize)
 
+        const isLastChunk = j >= arraySize
+
         // Defer data fetching/slicing until we actually need the data, because it's slow if we have a lot of files
         const getData = () => {
           const i2 = offset
-          return this.#data.slice(i2, end)
+          const result = this.#data.slice(i2, end)
+          return this.#preprocessChunk(this.#file, result, j, isLastChunk)
         }
 
         this.#chunks[j] = {
-          getData,
+          getData: getData,
           onProgress: this.#onPartProgress(j),
           onComplete: this.#onPartComplete(j),
           shouldUseMultipart,
@@ -171,7 +181,7 @@ class MultipartUploader<M extends Meta, B extends Body> {
     } else {
       this.#chunks = [
         {
-          getData: () => this.#data,
+          getData: () => this.#preprocessChunk(this.#file, this.#data, 0, true),
           onProgress: this.#onPartProgress(0),
           onComplete: this.#onPartComplete(0),
           shouldUseMultipart,
@@ -188,6 +198,7 @@ class MultipartUploader<M extends Meta, B extends Body> {
         this.#file,
         this.#chunks as Chunk[],
         this.#abortController.signal,
+        this.options.sequentialProcessing,
       )
       .then(this.#onSuccess, this.#onReject)
     this.#uploadHasStarted = true
@@ -226,6 +237,24 @@ class MultipartUploader<M extends Meta, B extends Body> {
     this.options.companionComm
       .abortFileUpload(this.#file)
       .catch((err: unknown) => this.options.log(err as Error))
+  }
+
+  async #preprocessChunk(
+    file: UppyFile<M, B>,
+    chunkData: Blob,
+    chunkIndex: number,
+    isLastChunk: boolean = false,
+  ) {
+    if (!this.options.preprocessChunk) {
+      return chunkData
+    }
+
+    return this.options.preprocessChunk(
+      file,
+      chunkData,
+      chunkIndex,
+      isLastChunk,
+    )
   }
 
   start(): void {

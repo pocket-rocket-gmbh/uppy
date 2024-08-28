@@ -8,6 +8,7 @@ import type AwsS3Multipart from './index.ts'
 import { throwIfAborted } from './utils.ts'
 import type { UploadPartBytesResult, UploadResult } from './utils.ts'
 import type { AwsS3MultipartOptions, uploadPartBytes } from './index.ts'
+import { runInSequence } from 'run-in-sequence'
 
 function removeMetadataFromURL(urlString: string) {
   const urlObject = new URL(urlString)
@@ -253,7 +254,7 @@ export class HTTPCommunicationQueue<M extends Meta, B extends Body> {
     }).abortOn(signal)
 
     let body
-    const data = chunk.getData()
+    const data = await chunk.getData()
     if (method.toUpperCase() === 'POST') {
       const formData = new FormData()
       Object.entries(fields!).forEach(([key, value]) =>
@@ -288,6 +289,7 @@ export class HTTPCommunicationQueue<M extends Meta, B extends Body> {
     file: UppyFile<M, B>,
     chunks: Chunk[],
     signal: AbortSignal,
+    sequentialProcessing: boolean = false,
   ): Promise<B & Partial<UploadPartBytesResult>> {
     throwIfAborted(signal)
     if (chunks.length === 1 && !chunks[0].shouldUseMultipart) {
@@ -296,9 +298,19 @@ export class HTTPCommunicationQueue<M extends Meta, B extends Body> {
     const { uploadId, key } = await this.getUploadId(file, signal)
     throwIfAborted(signal)
     try {
-      const parts = await Promise.all(
-        chunks.map((chunk, i) => this.uploadChunk(file, i + 1, chunk, signal)),
-      )
+      const parts =
+        sequentialProcessing ?
+          await runInSequence(
+            chunks.map(
+              (chunk, i) => async () =>
+                this.uploadChunk(file, i + 1, chunk, signal),
+            ),
+          )
+        : await Promise.all(
+            chunks.map((chunk, i) =>
+              this.uploadChunk(file, i + 1, chunk, signal),
+            ),
+          )
       throwIfAborted(signal)
       return await this.#sendCompletionRequest(
         this.#getFile(file),
@@ -384,7 +396,7 @@ export class HTTPCommunicationQueue<M extends Meta, B extends Body> {
 
     for (;;) {
       throwIfAborted(signal)
-      const chunkData = chunk.getData()
+      const chunkData = await chunk.getData()
       const { onProgress, onComplete } = chunk
       let signature
 
