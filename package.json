@@ -26,6 +26,7 @@
       "@uppy-dev/remark-lint-uppy"
     ]
   },
+  "pre-commit": "lint:staged",
   "license": "MIT",
   "engines": {
     "node": "^16.15.0 || >=18.0.0",
